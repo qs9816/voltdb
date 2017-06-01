@@ -449,10 +449,11 @@ int VoltDBEngine::executePlanFragment(int64_t planfragmentId,
         return ENGINE_ERRORCODE_ERROR;
     }
 
-    m_plans.reset(new EnginePlanSet());
-
     int64_t tuplesModified = m_tuplesModifiedStack.top();
     resetExecutionMetadata();
+
+    // reset the plan after current executor vector has been reset
+    m_plans.reset(new EnginePlanSet());
 
     // assume this is sendless dml
     if (m_numResultDependencies == 0) {
@@ -1147,8 +1148,8 @@ void VoltDBEngine::setExecutorVectorForFragmentId(int64_t fragId)
         ev_guard = ExecutorVector::fromJsonPlan(this, plan, fragId);
     } catch (SerializableEEException &e) {
         // print out the EE string
-        char msg[1024];
-        snprintf(msg, 1024, "Received Json plan string from Java: %s", plan.c_str());
+        char msg[10240];
+        snprintf(msg, 10240, "Received Json plan string from Java: %s", plan.c_str());
 
         LogManager::getThreadLogger(LOGGERID_HOST)->log(LOGLEVEL_WARN, msg);
     }
