@@ -17,7 +17,9 @@
 
 package org.voltdb;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -228,12 +230,23 @@ public class LoadedProcedureSet {
 
     public static String JSON_PLAN = "*x*x";
     static {
-        URL url = Resources.getResource(CatalogUtil.class, "json_plan.sql");
+        URL url;
+//        url = Resources.getResource(CatalogUtil.class, "json_plan.sql");
+//        try {
+//            JSON_PLAN = Resources.toString(url, Charsets.UTF_8);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
         try {
-            JSON_PLAN = Resources.toString(url, Charsets.UTF_8);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+			JSON_PLAN = Resources.toString(new File("/tmp/json_plan.sql").toURI().toURL(), Charsets.UTF_8);
+		} catch (MalformedURLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
     }
 
     public long NUM_CHECKS = 0;
