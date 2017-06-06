@@ -527,4 +527,26 @@ public class FunctionForVoltDB extends FunctionSQL {
         return sb.toString();
     }
 
+    public FunctionId getFunctionId() {
+        return m_def;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!super.equals(other)) return false;
+        if (other instanceof FunctionForVoltDB == false) return false;
+
+        FunctionForVoltDB function = (FunctionForVoltDB) other;
+        if (function.getFunctionId().getId() != m_def.getId()) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int val = super.hashCode();
+        val += Integer.hashCode(m_def.getId());
+        return val;
+    }
+
 }
