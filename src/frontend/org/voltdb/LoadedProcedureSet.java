@@ -300,7 +300,19 @@ public class LoadedProcedureSet {
                 // for this plan-on-the-fly procedure
                 pr.setProcNameToLoadForFragmentTasks(catProc.getTypeName());
 //                m_defaultProcCache.put(procName, pr);
-                printDebugInformation(db, newCatProc, procName);
+//                printDebugInformation(db, newCatProc, procName);
+
+                if ("T_TRANSLOG_EA.insert".equals(newCatProc.getTypeName())) {
+                    NUM_CHECKS++;
+                    String debugPlanOutput = CatalogUtil.printProcedureDetail(newCatProc);
+                    if (! debugPlanOutput.contains(JSON_PLAN)) {
+                        printDebugInformation(db, newCatProc, procName);
+                        VoltDB.crashLocalVoltDB("Wrong plan:\n" + debugPlanOutput);
+                    }
+                    if (NUM_CHECKS % 10000 == 0) {
+                        hostLog.info("[getProcByNameForDebug] T_TRANSLOG_EA.insert gets compiled for " + NUM_CHECKS + " times");
+                    }
+                }
             }
         }
 
