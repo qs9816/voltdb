@@ -228,7 +228,7 @@ public class LoadedProcedureSet {
 
     public static String JSON_PLAN = "*x*x";
     static {
-        URL url = Resources.getResource(CatalogUtil.class, "json_plan.txt");
+        URL url = Resources.getResource(CatalogUtil.class, "json_plan.sql");
         try {
             JSON_PLAN = Resources.toString(url, Charsets.UTF_8);
         } catch (IOException e) {
