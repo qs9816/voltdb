@@ -817,10 +817,10 @@ public class ExpressionColumn extends Expression {
     @Override
     public int hashCode() {
         // A VoltDB extension
-        int val = Integer.hashCode(opType);
+        int val = Objects.hashCode(opType);
         switch (opType) {
         case OpTypes.SIMPLE_COLUMN :
-            return val + Integer.hashCode(columnIndex) ;
+            return val + Objects.hashCode(columnIndex) ;
 
         case OpTypes.COALESCE :
             return val + Arrays.hashCode(nodes);
@@ -832,7 +832,7 @@ public class ExpressionColumn extends Expression {
             return val;
 
         case OpTypes.DYNAMIC_PARAM :
-            return val + Integer.hashCode(parameterIndex);
+            return val + Objects.hashCode(parameterIndex);
         // End of VoltDB extension
 
         default :

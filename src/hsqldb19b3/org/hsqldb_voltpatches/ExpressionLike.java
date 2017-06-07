@@ -36,6 +36,8 @@ import org.hsqldb_voltpatches.lib.Set;
 import org.hsqldb_voltpatches.types.BinaryData;
 import org.hsqldb_voltpatches.types.Type;
 
+import java.util.Objects;
+
 /**
  * Implementation of LIKE operations
  *
@@ -441,6 +443,6 @@ public final class ExpressionLike extends ExpressionLogical {
 
     @Override
     public int hashCode() {
-        return super.hashCode() + Boolean.hashCode(noOptimisation);
+        return super.hashCode() + Objects.hashCode(noOptimisation);
     }
 }

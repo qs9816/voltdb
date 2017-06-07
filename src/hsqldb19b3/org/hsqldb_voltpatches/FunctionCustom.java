@@ -33,6 +33,7 @@ package org.hsqldb_voltpatches;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 import org.hsqldb_voltpatches.lib.IntKeyIntValueHashMap;
 import org.hsqldb_voltpatches.store.ValuePool;
@@ -1786,7 +1787,7 @@ public class FunctionCustom extends FunctionSQL {
     @Override
     public int hashCode() {
         int val = super.hashCode();
-        val += Integer.hashCode(extractSpec);
+        val += Objects.hashCode(extractSpec);
         return val;
     }
 

@@ -31,6 +31,8 @@
 
 package org.hsqldb_voltpatches;
 
+import java.util.Objects;
+
 /**
  * Implementation of ORDER BY operations
  *
@@ -149,8 +151,8 @@ public class ExpressionOrderBy extends Expression {
     @Override
     public int hashCode() {
         int val = super.hashCode();
-        val += Boolean.hashCode(isDescending);
-        val += Boolean.hashCode(isNullsLast);
+        val += Objects.hashCode(isDescending);
+        val += Objects.hashCode(isNullsLast);
         return val;
     }
     /**********************************************************************/

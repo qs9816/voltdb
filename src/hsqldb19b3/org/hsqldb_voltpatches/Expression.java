@@ -470,11 +470,11 @@ public class Expression {
 
     @Override
     public int hashCode() {
-        int val = Integer.hashCode(opType) + Integer.hashCode(exprSubType) + Objects.hashCode(dataType);
+        int val = Objects.hashCode(opType) + Objects.hashCode(exprSubType) + Objects.hashCode(dataType);
         switch (opType) {
 
             case OpTypes.SIMPLE_COLUMN :
-                return val + Integer.hashCode(columnIndex);
+                return val + Objects.hashCode(columnIndex);
 
             case OpTypes.VALUE:
                 return val + Objects.hashCode(valueData);

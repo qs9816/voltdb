@@ -34,6 +34,7 @@ package org.hsqldb_voltpatches;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.hsqldb_voltpatches.types.Type;
 
@@ -545,7 +546,7 @@ public class FunctionForVoltDB extends FunctionSQL {
     @Override
     public int hashCode() {
         int val = super.hashCode();
-        val += Integer.hashCode(m_def.getId());
+        val += Objects.hashCode(m_def.getId());
         return val;
     }
 
