@@ -811,6 +811,34 @@ public class ExpressionColumn extends Expression {
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        int val = opType;
+        switch (opType) {
+        case OpTypes.SIMPLE_COLUMN :
+            return val + columnIndex;
+        case OpTypes.COALESCE :
+            for (int i = 0; i < nodes.length; i++) {
+                if (nodes[i] != null) {
+                    val += nodes[i].hashCode();
+                }
+            }
+            return val;
+        case OpTypes.COLUMN :
+            if (column != null) {
+                val += column.hashCode();
+            }
+            return val;
+        case OpTypes.ASTERISK :
+            return val;
+        case OpTypes.DYNAMIC_PARAM :
+            return val + parameterIndex;
+        default :
+            return super.hashCode();
+        }
+
+    }
+
     public boolean equals(Expression other) {
 
         if (other == this) {
@@ -839,6 +867,8 @@ public class ExpressionColumn extends Expression {
             // A VoltDB extension
             case OpTypes.ASTERISK :
                 return true;
+            case OpTypes.DYNAMIC_PARAM :
+                return parameterIndex == other.parameterIndex;
             // End of VoltDB extension
 
             default :

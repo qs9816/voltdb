@@ -470,11 +470,28 @@ public class Expression {
     public int hashCode() {
 
         int val = opType + exprSubType;
+        if (dataType != null) {
+            val += dataType.hashCode();
+        }
 
+        switch (opType) {
+            case OpTypes.SIMPLE_COLUMN :
+                return val + columnIndex;
+            case OpTypes.VALUE:
+                if (valueData != null) {
+                    val += valueData.hashCode();
+                }
+                return val;
+        }
+        // default case
         for (int i = 0; i < nodes.length; i++) {
             if (nodes[i] != null) {
                 val += nodes[i].hashCode();
             }
+        }
+
+        if (subQuery != null) {
+            val += subQuery.hashCode();
         }
 
         return val;
@@ -1938,7 +1955,7 @@ public class Expression {
         // If object is a leaf node, then we'll use John's original code...
         //
         if (getType() == OpTypes.VALUE || getType() == OpTypes.COLUMN) {
-            hashCode = super.hashCode();
+            hashCode = hashCode();
         //
         // Otherwise we need to generate and Id based on what our children are
         //
@@ -1963,7 +1980,7 @@ public class Expression {
                 hashCode = this.cached_id.intern().hashCode();
             }
             else
-                hashCode = super.hashCode();
+                hashCode = hashCode();
         }
 
         long id = session.getNodeIdForExpression(hashCode);
