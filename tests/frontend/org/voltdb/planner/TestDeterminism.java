@@ -23,12 +23,10 @@
 
 package org.voltdb.planner;
 
-import org.apache.commons.lang3.StringUtils;
-import org.voltdb.compiler.DeterminismMode;
-import org.voltdb.plannodes.AbstractPlanNode;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.voltdb.compiler.DeterminismMode;
 
 public class TestDeterminism extends PlannerTestCase {
 
@@ -45,11 +43,14 @@ public class TestDeterminism extends PlannerTestCase {
         final String sql = "INSERT INTO T_PAYMENT50 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
         final int totalThreads = 300;
-        final Runnable runnable = () -> {
-            System.err.println("Started");
-            while (true) {
-                final CompiledPlan plan = getmeaplan(sql);
-                assertEquals(plan.rootPlanGraph.getChild(0).toJSONString(), desired, plan.rootPlanGraph.getChild(0).toJSONString());
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                System.err.println("Started");
+                while (true) {
+                    final CompiledPlan plan = getmeaplan(sql);
+                    assertEquals(plan.rootPlanGraph.getChild(0).toJSONString(), desired, plan.rootPlanGraph.getChild(0).toJSONString());
+                }
             }
         };
 
