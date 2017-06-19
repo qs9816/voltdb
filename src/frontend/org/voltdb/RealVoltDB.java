@@ -98,6 +98,7 @@ import org.voltcore.utils.VersionChecker;
 import org.voltcore.zk.CoreZK;
 import org.voltcore.zk.ZKCountdownLatch;
 import org.voltcore.zk.ZKUtil;
+import org.voltdb.ProducerDRGateway.ClusterIdentity;
 import org.voltdb.ProducerDRGateway.MeshMemberInfo;
 import org.voltdb.TheHashinator.HashinatorType;
 import org.voltdb.VoltDB.Configuration;
@@ -4092,7 +4093,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
         try {
             if (m_consumerDRGateway != null) {
                 if (m_config.m_startAction != StartAction.CREATE) {
-                    Pair<Byte, List<MeshMemberInfo>> expectedClusterMembers = m_producerDRGateway.getInitialConversations();
+                    Pair<ClusterIdentity, List<MeshMemberInfo>> expectedClusterMembers = m_producerDRGateway.getInitialConversations();
                     m_consumerDRGateway.setInitialConversationMembership(expectedClusterMembers.getFirst(),
                             expectedClusterMembers.getSecond());
                 }
@@ -4131,6 +4132,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                         Cartographer.class,
                         HostMessenger.class,
                         byte.class,
+                        long.class,
                         byte.class,
                         String.class,
                         int.class);
@@ -4139,6 +4141,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                         m_cartographer,
                         m_messenger,
                         drConsumerClusterId,
+                        getClusterCreateTime(),
                         (byte) m_catalogContext.cluster.getPreferredsource(),
                         drIfAndPort.getFirst(),
                         drIfAndPort.getSecond());
