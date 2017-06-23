@@ -105,6 +105,10 @@ public:
     virtual void generateDREvent(DREventType type, int64_t lastCommittedSpHandle, int64_t spHandle,
                                  int64_t uniqueId, ByteArray payloads) = 0;
 
+    void setDrVersion(uint8_t drVersion) {
+        m_drVersion = drVersion;
+    }
+
     bool m_enabled;
     bool m_guarded; // strongest guard, reject all actions for DRTupleStream
 
@@ -120,7 +124,7 @@ protected:
     int64_t m_rowTarget;
     bool m_opened;
     size_t m_txnRowCount;
-
+    uint8_t m_drVersion;
 private:
     // return true if stream state was switched from close to open
     virtual bool transactionChecks(int64_t lastCommittedSpHandle, int64_t spHandle, int64_t uniqueId) = 0;

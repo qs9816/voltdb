@@ -43,7 +43,7 @@ public:
     static const uint8_t PROTOCOL_VERSION = 8;
     static const uint8_t COMPATIBLE_PROTOCOL_VERSION = 7;
 
-    DRTupleStream(int partitionId, int defaultBufferSize);
+    DRTupleStream(int partitionId, int defaultBufferSize, uint8_t defaultDrVersion=PROTOCOL_VERSION);
 
     virtual ~DRTupleStream() {}
 
@@ -97,7 +97,8 @@ public:
                                    std::vector<int32_t> partitionKeyValueList,
                                    std::vector<int32_t> flagList,
                                    long startSequenceNumber,
-                                   char *out);
+                                   char *out,
+                                   uint8_t drVersion=PROTOCOL_VERSION);
 
 private:
     bool transactionChecks(int64_t lastCommittedSpHandle, int64_t spHandle, int64_t uniqueId);

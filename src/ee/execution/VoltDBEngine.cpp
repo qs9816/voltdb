@@ -2052,8 +2052,12 @@ void VoltDBEngine::executeTask(TaskType taskType, ReferenceSerializeInputBE &tas
     }
     case TASK_TYPE_SET_DR_PROTOCOL_VERSION: {
         m_drVersion = taskInfo.readInt();
+        // pass negotiated protocol version to drStream
+        m_drStream->setDrVersion(static_cast<uint8_t>(m_drVersion));
         m_executorContext->setDrStream(m_drStream);
+
         if (m_drReplicatedStream) {
+            m_drReplicatedStream->setDrVersion(m_drVersion);
             m_executorContext->setDrReplicatedStream(m_drReplicatedStream);
         }
         m_resultOutput.writeInt(0);
