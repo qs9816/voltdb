@@ -1047,7 +1047,9 @@ public abstract class CatalogUtil {
             Marshaller marshaller = m_jc.createMarshaller();
             marshaller.setSchema(m_schema);
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.valueOf(indent));
+            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
             StringWriter sw = new StringWriter();
+            sw.append("<?xml version=\"1.1\" encoding=\"UTF-8\" standalone=\"yes\"?>\n");
             marshaller.marshal(new JAXBElement<>(new QName("","deployment"), DeploymentType.class, deployment), sw);
             return sw.toString();
         } catch (JAXBException e) {

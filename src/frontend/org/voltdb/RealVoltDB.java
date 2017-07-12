@@ -203,7 +203,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
 
     /** Default deployment file contents if path to deployment is null */
     private static final String[] defaultDeploymentXML = {
-        "<?xml version=\"1.0\"?>",
+        "<?xml version=\"1.1\"?>",
         "<!-- This file is an auto-generated default deployment configuration. -->",
         "<deployment>",
         "    <cluster hostcount=\"1\" />",
@@ -2218,7 +2218,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
 
         File depFH = getConfigLogDeployment(config);
         try (FileWriter fw = new FileWriter(depFH)) {
-            fw.write(CatalogUtil.getDeployment(dt, true /* pretty print indent */));
+            fw.write(CatalogUtil.getDeployment(dt, true /* pretty print indent */).replaceAll("\1", "&#01;"));
         } catch (IOException|RuntimeException e) {
             VoltDB.crashLocalVoltDB("Unable to marshal deployment configuration to " + depFH, false, e);
         }
