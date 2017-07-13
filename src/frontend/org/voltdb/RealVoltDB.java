@@ -651,7 +651,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                     return -1;
                 }
                 try (FileOutputStream fos = new FileOutputStream(config.m_getOutput.trim())){
-                    fos.write(out.getBytes());
+                    fos.write(out.replace("\1", "&#01;").getBytes());
                 } catch (IOException e) {
                     consoleLog.fatal("Failed to write deployment to " + config.m_getOutput
                             + " : " + e.getMessage());
@@ -1918,7 +1918,8 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                     deploymentFile.delete();
                 }
                 FileOutputStream fileOutputStream = new FileOutputStream(deploymentFile);
-                fileOutputStream.write(m_catalogContext.getDeploymentBytes());
+                String depStr = new String(m_catalogContext.getDeploymentBytes());
+                fileOutputStream.write(depStr.replace("\1", "&#01;").getBytes());
                 fileOutputStream.close();
             } catch (Exception e) {
                 hostLog.error("Failed to log deployment file: " + e.getMessage(), e);

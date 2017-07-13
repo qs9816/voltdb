@@ -17,12 +17,14 @@
 
 package org.voltdb.utils;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -50,6 +52,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -849,10 +852,12 @@ public abstract class CatalogUtil {
             if (m_jc == null || m_schema == null) {
                 throw new RuntimeException("Error schema validation.");
             }
+            String deployStr = new BufferedReader(new InputStreamReader(deployIS)).lines().collect(Collectors.joining("\n"));
+            InputStream newIS = new ByteArrayInputStream(deployStr.replace("\1", "&#01;").getBytes());
             Unmarshaller unmarshaller = m_jc.createUnmarshaller();
             unmarshaller.setSchema(m_schema);
             JAXBElement<DeploymentType> result =
-                (JAXBElement<DeploymentType>) unmarshaller.unmarshal(deployIS);
+                (JAXBElement<DeploymentType>) unmarshaller.unmarshal(newIS);
             DeploymentType deployment = result.getValue();
             populateDefaultDeployment(deployment);
             return deployment;

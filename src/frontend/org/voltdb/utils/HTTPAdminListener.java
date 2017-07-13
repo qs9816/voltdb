@@ -604,7 +604,7 @@ public class HTTPAdminListener {
                     // reflect the actual number of cluster members
                     dt.getCluster().setHostcount(getCatalogContext().getClusterSettings().hostcount());
 
-                    response.getWriter().write(CatalogUtil.getDeployment(dt, true));
+                    response.getWriter().write(CatalogUtil.getDeployment(dt, true).replace("\1", "&#01;"));
                 } else if (target.startsWith("/users/")) { // username may be passed in after the / (not as a param)
                     if (request.getMethod().equalsIgnoreCase("POST")) {
                         handleUpdateUser(jsonp, target, baseRequest, request, response, authResult);
