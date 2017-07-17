@@ -651,6 +651,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                     return -1;
                 }
                 try (FileOutputStream fos = new FileOutputStream(config.m_getOutput.trim())){
+                    // Rewrite special character '\1' (if there is any) as XML entity
                     fos.write(out.replace("\1", "&#01;").getBytes());
                 } catch (IOException e) {
                     consoleLog.fatal("Failed to write deployment to " + config.m_getOutput
@@ -1919,6 +1920,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                 }
                 FileOutputStream fileOutputStream = new FileOutputStream(deploymentFile);
                 String depStr = new String(m_catalogContext.getDeploymentBytes());
+                // Rewrite special character '\1' (if there is any) as XML entity
                 fileOutputStream.write(depStr.replace("\1", "&#01;").getBytes());
                 fileOutputStream.close();
             } catch (Exception e) {
@@ -2219,7 +2221,8 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
 
         File depFH = getConfigLogDeployment(config);
         try (FileWriter fw = new FileWriter(depFH)) {
-            fw.write(CatalogUtil.getDeployment(dt, true /* pretty print indent */).replaceAll("\1", "&#01;"));
+            // Rewrite special character '\1' (if there is any) as XML entity
+            fw.write(CatalogUtil.getDeployment(dt, true /* pretty print indent */).replace("\1", "&#01;"));
         } catch (IOException|RuntimeException e) {
             VoltDB.crashLocalVoltDB("Unable to marshal deployment configuration to " + depFH, false, e);
         }

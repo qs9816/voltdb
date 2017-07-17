@@ -603,7 +603,7 @@ public class HTTPAdminListener {
                     DeploymentType dt = CatalogUtil.shallowClusterAndPathsClone(this.getDeployment());
                     // reflect the actual number of cluster members
                     dt.getCluster().setHostcount(getCatalogContext().getClusterSettings().hostcount());
-
+                    // Rewrite special character '\1' (if there is any) as XML entity
                     response.getWriter().write(CatalogUtil.getDeployment(dt, true).replace("\1", "&#01;"));
                 } else if (target.startsWith("/users/")) { // username may be passed in after the / (not as a param)
                     if (request.getMethod().equalsIgnoreCase("POST")) {

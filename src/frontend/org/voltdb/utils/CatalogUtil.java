@@ -853,6 +853,7 @@ public abstract class CatalogUtil {
                 throw new RuntimeException("Error schema validation.");
             }
             String deployStr = new BufferedReader(new InputStreamReader(deployIS)).lines().collect(Collectors.joining("\n"));
+            // Rewrite special character '\1' (if there is any) as XML entity
             InputStream newIS = new ByteArrayInputStream(deployStr.replace("\1", "&#01;").getBytes());
             Unmarshaller unmarshaller = m_jc.createUnmarshaller();
             unmarshaller.setSchema(m_schema);
