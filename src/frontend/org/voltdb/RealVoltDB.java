@@ -267,6 +267,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
     private ScheduledFuture<?> resMonitorWork;
     private HealthMonitor m_healthMonitor;
 
+    private FailedLoginCounter[] m_flcArray = new FailedLoginCounter[128];
 
     private NodeStateTracker m_statusTracker;
     // Should the execution sites be started in recovery mode
@@ -355,8 +356,6 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
     boolean m_durable = false;
 
     private int m_maxThreadsCount;
-
-    private FailedLoginCounter m_counter = new FailedLoginCounter();
 
     @Override
     public boolean isRunningWithOldVerbs() {
@@ -4543,11 +4542,11 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
         hostLog.error(sb.toString());
     }
 
-	public FailedLoginCounter getFailedLoginCounter() {
-		return m_counter;
-	}
+    public FailedLoginCounter[] getFLCArray() {
+        return m_flcArray;
+    }
 
-	public void setFailedLoginCounter(FailedLoginCounter counter) {
-		m_counter = counter;
-	}
+    public void setMFLCArray(FailedLoginCounter[] m_flcArray) {
+        this.m_flcArray = m_flcArray;
+    }
 }
