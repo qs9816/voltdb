@@ -52,7 +52,7 @@ import org.voltdb.utils.PosixAdvise;
  * meta-data that was stored when the table was saved and makes it available
  * to clients.  The meta data is stored as a JSON blob with length prefixing and a CRC
  * as well as a byte to that is set once the file is completely written and synced.
- * A VoltTable header describing the schema is follows the JSON blob.
+ * A VoltTable header describing the schema follows the JSON blob.
  */
 public class TableSaveFile
 {
@@ -64,7 +64,6 @@ public class TableSaveFile
     public class Container extends BBContainer {
         public final int partitionId;
         private final BBContainer m_origin;
-        private boolean discarded = false;
         Container(ByteBuffer b, BBContainer origin, int partitionId) {
             super(b);
             m_origin = origin;
@@ -74,7 +73,6 @@ public class TableSaveFile
         @Override
         public void discard() {
             checkDoubleFree();
-            discarded = true;
             if (m_hasMoreChunks == false) {
                 m_origin.discard();
             } else {
@@ -85,7 +83,7 @@ public class TableSaveFile
     }
 
     /**
-     * It is actually possible to make a bigger chunk then this if the table header is
+     * It is actually possible to make a bigger chunk than this if the table header is
      * big enough...
      */
     private static final int DEFAULT_CHUNKSIZE =
@@ -471,6 +469,7 @@ public class TableSaveFile
         return m_hasMoreChunks || !m_availableChunks.isEmpty();
     }
 
+    // thread safe file channels
     private final FileChannel m_saveFile;
     private final FileDescriptor m_fd;
     private final ByteBuffer m_tableHeader;
@@ -487,7 +486,7 @@ public class TableSaveFile
     private final int m_totalPartitions;
     private final long m_txnId;
     private final long m_timestamp;
-    private boolean m_hasMoreChunks = true;
+    private volatile boolean m_hasMoreChunks = true;
     private ConcurrentLinkedQueue<BBContainer> m_buffers = new ConcurrentLinkedQueue<BBContainer>();
     private final ArrayDeque<Container> m_availableChunks = new ArrayDeque<Container>();
     private final HashSet<Integer> m_relevantPartitionIds;
@@ -536,7 +535,13 @@ public class TableSaveFile
             final ByteBuffer fileInputBuffer = fileInputBufferC.b();
             long sinceLastFAdvise = Long.MAX_VALUE;
             long positionAtLastFAdvise = 0;
-            while (m_hasMoreChunks) {
+
+            while (true) {
+                synchronized (TableSaveFile.this) {
+                    if (!m_hasMoreChunks) {
+                        break;
+                    }
+                }
                 if (sinceLastFAdvise > 1024 * 1024 * 48) {
                     sinceLastFAdvise = 0;
                     VoltLogger log = new VoltLogger("SNAPSHOT");
@@ -786,7 +791,12 @@ public class TableSaveFile
             BBContainer fileInputBufferC =
                     DBBPool.allocateDirect(CompressionService.maxCompressedLength(DEFAULT_CHUNKSIZE));
             ByteBuffer fileInputBuffer = fileInputBufferC.b();
-            while (m_hasMoreChunks) {
+            while (true) {
+                synchronized (TableSaveFile.this) {
+                    if (!m_hasMoreChunks) {
+                        break;
+                    }
+                }
                 /*
                  * Limit the number of chunk materialized into memory at one time
                  */

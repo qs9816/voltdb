@@ -86,15 +86,13 @@ public class PlannerTool {
         hostLog.debug("hsql loaded");
 
         // Create and register a singleton planner stats collector, if this is the first time.
-        if (m_plannerStats == null) {
-            synchronized (this.getClass()) {
-                if (m_plannerStats == null) {
-                    final StatsAgent statsAgent = VoltDB.instance().getStatsAgent();
-                    // In mock test environments there may be no stats agent.
-                    if (statsAgent != null) {
-                        m_plannerStats = new PlannerStatsCollector(-1);
-                        statsAgent.registerStatsSource(StatsSelector.PLANNER, -1, m_plannerStats);
-                    }
+        synchronized (PlannerTool.class) {
+            if (m_plannerStats == null) {
+                final StatsAgent statsAgent = VoltDB.instance().getStatsAgent();
+                // In mock test environments there may be no stats agent.
+                if (statsAgent != null) {
+                    m_plannerStats = new PlannerStatsCollector(-1);
+                    statsAgent.registerStatsSource(StatsSelector.PLANNER, -1, m_plannerStats);
                 }
             }
         }
