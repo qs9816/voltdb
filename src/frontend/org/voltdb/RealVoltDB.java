@@ -2475,7 +2475,6 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
             }
 
             m_catalogContext = new CatalogContext(
-                            TxnEgo.makeZero(MpInitiator.MP_INIT_PID).getTxnId(), //txnid
                             0, //timestamp
                             catalog,
                             new DbSettings(m_clusterSettings, m_nodeSettings),
@@ -3305,22 +3304,6 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
         VoltLogger.configure(xmlConfig, voltroot);
     }
 
-    /** Struct to associate a context with a counter of served sites */
-    private static class ContextTracker {
-        ContextTracker(CatalogContext context, CatalogSpecificPlanner csp) {
-            m_dispensedSites = 1;
-            m_context = context;
-            m_csp = csp;
-        }
-        long m_dispensedSites;
-        final CatalogContext m_context;
-        final CatalogSpecificPlanner m_csp;
-    }
-
-    /** Associate transaction ids to contexts */
-    private final HashMap<Long, ContextTracker>m_txnIdToContextTracker =
-        new HashMap<>();
-
     @Override
     public Pair<CatalogContext, CatalogSpecificPlanner> catalogUpdate(
             String diffCommands,
@@ -3341,20 +3324,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                 final ReplicationRole oldRole = getReplicationRole();
 
                 m_statusTracker.setNodeState(NodeState.UPDATING);
-                // A site is catching up with catalog updates
-                if (currentTxnId <= m_catalogContext.m_transactionId && !m_txnIdToContextTracker.isEmpty()) {
-                    ContextTracker contextTracker = m_txnIdToContextTracker.get(currentTxnId);
-                    // This 'dispensed' concept is a little crazy fragile. Maybe it would be better
-                    // to keep a rolling N catalogs? Or perhaps to keep catalogs for N minutes? Open
-                    // to opinions here.
-                    contextTracker.m_dispensedSites++;
-                    int ttlsites = VoltDB.instance().getSiteTrackerForSnapshot().getSitesForHost(m_messenger.getHostId()).size();
-                    if (contextTracker.m_dispensedSites == ttlsites) {
-                        m_txnIdToContextTracker.remove(currentTxnId);
-                    }
-                    return Pair.of( contextTracker.m_context, contextTracker.m_csp);
-                }
-                else if (m_catalogContext.catalogVersion != expectedCatalogVersion) {
+                if (m_catalogContext.catalogVersion != expectedCatalogVersion) {
                     hostLog.fatal("Failed catalog update." +
                             " expectedCatalogVersion: " + expectedCatalogVersion +
                             " currentTxnId: " + currentTxnId +
@@ -3374,7 +3344,6 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                 // 0. A new catalog! Update the global context and the context tracker
                 m_catalogContext =
                     m_catalogContext.update(
-                            currentTxnId,
                             currentTxnUniqueId,
                             newCatalogBytes,
                             catalogBytesHash,
@@ -3383,11 +3352,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                             deploymentBytes,
                             m_messenger,
                             hasSchemaChange, ccrTime);
-                final CatalogSpecificPlanner csp = new CatalogSpecificPlanner(/*m_asyncCompilerAgent,*/ m_catalogContext);
-                m_txnIdToContextTracker.put(currentTxnId,
-                        new ContextTracker(
-                                m_catalogContext,
-                                csp));
+                final CatalogSpecificPlanner csp = new CatalogSpecificPlanner(m_catalogContext);
 
                 // log the stuff that's changed in this new catalog update
                 SortedMap<String, String> newDbgMap = m_catalogContext.getDebuggingInfoFromCatalog(false);

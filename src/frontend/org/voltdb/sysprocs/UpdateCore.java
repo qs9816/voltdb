@@ -504,7 +504,6 @@ public class UpdateCore extends VoltSystemProcedure {
      * @param expectedCatalogVersion
      * @return Standard STATUS table.
      */
-    @SuppressWarnings("deprecation")
     public VoltTable[] run(SystemProcedureExecutionContext ctx,
                            String catalogDiffCommands,
                            byte[] catalogHash,
@@ -584,7 +583,6 @@ public class UpdateCore extends VoltSystemProcedure {
             CatalogUtil.updateCatalogToZK(
                     zk,
                     expectedCatalogVersion + 1,
-                    DeprecatedProcedureAPIAccess.getVoltPrivateRealTransactionId(this),
                     getUniqueId(),
                     catalogBytes,
                     catalogHash,
@@ -605,7 +603,6 @@ public class UpdateCore extends VoltSystemProcedure {
                 CatalogUtil.updateCatalogToZK(
                         zk,
                         catalogStuff.version,
-                        catalogStuff.txnId,
                         catalogStuff.uniqueId,
                         catalogStuff.catalogBytes,
                         catalogStuff.getCatalogHash(),

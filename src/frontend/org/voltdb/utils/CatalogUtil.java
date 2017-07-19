@@ -2115,7 +2115,6 @@ public abstract class CatalogUtil {
 
     private static ByteBuffer makeCatalogVersionAndBytes(
                 int catalogVersion,
-                long txnId,
                 long uniqueId,
                 byte[] catalogBytes,
                 byte[] catalogHash,
@@ -2128,7 +2127,6 @@ public abstract class CatalogUtil {
                     4 +  // deployment bytes length
                     deploymentBytes.length +
                     4 +  // catalog version
-                    8 +  // txnID
                     8 +  // unique ID
                     20 + // catalog SHA-1 hash
                     20   // deployment SHA-1 hash
@@ -2145,7 +2143,6 @@ public abstract class CatalogUtil {
         }
 
         versionAndBytes.putInt(catalogVersion);
-        versionAndBytes.putLong(txnId);
         versionAndBytes.putLong(uniqueId);
         versionAndBytes.put(catalogHash);
         versionAndBytes.put(makeDeploymentHash(deploymentBytes));
@@ -2171,7 +2168,7 @@ public abstract class CatalogUtil {
         throws KeeperException, InterruptedException
     {
         ByteBuffer versionAndBytes = makeCatalogVersionAndBytes(catalogVersion,
-                txnId, uniqueId, catalogBytes, catalogHash, deploymentBytes);
+                uniqueId, catalogBytes, catalogHash, deploymentBytes);
         zk.create(VoltZK.catalogbytes,
                 versionAndBytes.array(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     }
@@ -2182,20 +2179,18 @@ public abstract class CatalogUtil {
      */
     public static void updateCatalogToZK(ZooKeeper zk,
             int catalogVersion,
-            long txnId,
             long uniqueId,
             byte[] catalogBytes,
             byte[] catalogHash,
             byte[] deploymentBytes)
         throws KeeperException, InterruptedException
     {
-        ByteBuffer versionAndBytes = makeCatalogVersionAndBytes(catalogVersion,
-                txnId, uniqueId, catalogBytes, catalogHash, deploymentBytes);
+        ByteBuffer versionAndBytes = makeCatalogVersionAndBytes(catalogVersion, uniqueId,
+                catalogBytes, catalogHash, deploymentBytes);
         zk.setData(VoltZK.catalogbytes, versionAndBytes.array(), -1);
     }
 
     public static class CatalogAndIds {
-        public final long txnId;
         public final long uniqueId;
         public final int version;
         private final byte[] catalogHash;
@@ -2203,7 +2198,7 @@ public abstract class CatalogUtil {
         public final byte[] catalogBytes;
         public final byte[] deploymentBytes;
 
-        private CatalogAndIds(long txnId,
+        private CatalogAndIds(
                 long uniqueId,
                 int catalogVersion,
                 byte[] catalogHash,
@@ -2211,7 +2206,6 @@ public abstract class CatalogUtil {
                 byte[] catalogBytes,
                 byte[] deploymentBytes)
         {
-            this.txnId = txnId;
             this.uniqueId = uniqueId;
             this.version = catalogVersion;
             this.catalogHash = catalogHash;
@@ -2233,8 +2227,7 @@ public abstract class CatalogUtil {
         @Override
         public String toString()
         {
-            return String.format("Catalog: TXN ID %d, catalog hash %s, deployment hash %s\n",
-                    txnId,
+            return String.format("Catalog: catalog hash %s, deployment hash %s\n",
                     Encoder.hexEncode(catalogHash).substring(0, 10),
                     Encoder.hexEncode(deploymentHash).substring(0, 10));
         }
@@ -2253,7 +2246,6 @@ public abstract class CatalogUtil {
         ByteBuffer versionAndBytes =
                 ByteBuffer.wrap(zk.getData(VoltZK.catalogbytes, false, null));
         int version = versionAndBytes.getInt();
-        long catalogTxnId = versionAndBytes.getLong();
         long catalogUniqueId = versionAndBytes.getLong();
         byte[] catalogHash = new byte[20]; // sha-1 hash size
         versionAndBytes.get(catalogHash);
@@ -2266,7 +2258,7 @@ public abstract class CatalogUtil {
         byte[] deploymentBytes = new byte[deploymentLength];
         versionAndBytes.get(deploymentBytes);
         versionAndBytes = null;
-        return new CatalogAndIds(catalogTxnId, catalogUniqueId, version, catalogHash,
+        return new CatalogAndIds(catalogUniqueId, version, catalogHash,
                 deploymentHash, catalogBytes, deploymentBytes);
     }
 
