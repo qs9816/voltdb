@@ -489,7 +489,7 @@ public class MockVoltDB implements VoltDBInterface
     }
 
     @Override
-    public Pair<CatalogContext, CatalogSpecificPlanner> catalogUpdate(String diffCommands,
+    public CatalogContext catalogUpdate(String diffCommands,
             byte[] catalogBytes, byte[] catalogHash, int expectedCatalogVersion,
             long currentTxnId, long currentTxnTimestamp, byte[] deploymentBytes,
             byte[] deploymentHash, boolean requireCatalogDiffCmdsApplyToEE,
@@ -499,7 +499,7 @@ public class MockVoltDB implements VoltDBInterface
     }
 
     @Override
-    public Pair<CatalogContext, CatalogSpecificPlanner> settingsUpdate(ClusterSettings settings, int expectedVersionId)
+    public CatalogContext settingsUpdate(ClusterSettings settings, int expectedVersionId)
     {
         throw new UnsupportedOperationException("unimplemented");
     }

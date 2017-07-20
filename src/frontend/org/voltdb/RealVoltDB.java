@@ -1253,11 +1253,6 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
 
             collectLocalNetworkMetadata();
 
-            /*
-             * Construct an adhoc planner for the initial catalog
-             */
-            final CatalogSpecificPlanner csp = new CatalogSpecificPlanner(m_catalogContext);
-
             // Initialize stats
             m_ioStats = new IOStats();
             getStatsAgent().registerStatsSource(StatsSelector.IOSTATS,
@@ -1397,7 +1392,6 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                             getBackendTargetType(),
                             m_catalogContext,
                             serializedCatalog,
-                            csp,
                             m_configuredNumberOfPartitions,
                             m_config.m_startAction,
                             getStatsAgent(),
@@ -3305,7 +3299,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
     }
 
     @Override
-    public Pair<CatalogContext, CatalogSpecificPlanner> catalogUpdate(
+    public CatalogContext catalogUpdate(
             String diffCommands,
             byte[] newCatalogBytes,
             byte[] catalogBytesHash,
@@ -3325,15 +3319,8 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
 
                 m_statusTracker.setNodeState(NodeState.UPDATING);
                 if (m_catalogContext.catalogVersion != expectedCatalogVersion) {
-                    hostLog.fatal("Failed catalog update." +
-                            " expectedCatalogVersion: " + expectedCatalogVersion +
-                            " currentTxnId: " + currentTxnId +
-                            " currentTxnUniqueId: " + currentTxnUniqueId +
-                            " m_catalogContext.catalogVersion " + m_catalogContext.catalogVersion);
-
-                    throw new RuntimeException("Trying to update main catalog context with diff " +
-                            "commands generated for an out-of date catalog. Expected catalog version: " +
-                            expectedCatalogVersion + " does not match actual version: " + m_catalogContext.catalogVersion);
+                    if (m_catalogContext.catalogVersion > expectedCatalogVersion);
+                    return m_catalogContext;
                 }
 
                 // get old debugging info
@@ -3352,7 +3339,6 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                             deploymentBytes,
                             m_messenger,
                             hasSchemaChange, ccrTime);
-                final CatalogSpecificPlanner csp = new CatalogSpecificPlanner(m_catalogContext);
 
                 // log the stuff that's changed in this new catalog update
                 SortedMap<String, String> newDbgMap = m_catalogContext.getDebuggingInfoFromCatalog(false);
@@ -3415,7 +3401,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                 // this after flushing the stats -- this will re-register
                 // the MPI statistics.
                 if (m_MPI != null) {
-                    m_MPI.updateCatalog(diffCommands, m_catalogContext, csp,
+                    m_MPI.updateCatalog(diffCommands, m_catalogContext,
                             requireCatalogDiffCmdsApplyToEE, requiresNewExportGeneration);
                 }
 
@@ -3469,7 +3455,7 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
 
                 checkThreadsSanity();
 
-                return Pair.of(m_catalogContext, csp);
+                return m_catalogContext;
             }
         } finally {
             //Set state back to UP
@@ -3478,10 +3464,9 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
     }
 
     @Override
-    public Pair<CatalogContext, CatalogSpecificPlanner> settingsUpdate(
+    public CatalogContext settingsUpdate(
             ClusterSettings settings, final int expectedVersionId)
     {
-        CatalogSpecificPlanner csp = new CatalogSpecificPlanner(/*m_asyncCompilerAgent,*/ m_catalogContext);
         synchronized(m_catalogUpdateLock) {
             int stamp [] = new int[]{0};
             ClusterSettings expect = m_clusterSettings.get(stamp);
@@ -3501,11 +3486,11 @@ public class RealVoltDB implements VoltDBInterface, RestoreAgent.Callback, HostM
                 m_clusterSettings.load(m_messenger.getZK());
             }
             if (m_MPI != null) {
-                m_MPI.updateSettings(m_catalogContext, csp);
+                m_MPI.updateSettings(m_catalogContext);
             }
             // good place to set deadhost timeout once we make it a config
         }
-        return Pair.of(m_catalogContext, csp);
+        return m_catalogContext;
     }
 
     @Override

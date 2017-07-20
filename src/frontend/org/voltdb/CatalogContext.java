@@ -59,7 +59,6 @@ public class CatalogContext {
         }
     }
 
-
     // THE CATALOG!
     public final Catalog catalog;
 

@@ -30,7 +30,6 @@ import org.voltcore.logging.VoltLogger;
 import org.voltcore.utils.CoreUtils;
 import org.voltcore.utils.Pair;
 import org.voltdb.CatalogContext;
-import org.voltdb.CatalogSpecificPlanner;
 import org.voltdb.DependencyPair;
 import org.voltdb.DeprecatedProcedureAPIAccess;
 import org.voltdb.ParameterSet;
@@ -364,7 +363,7 @@ public class UpdateCore extends VoltSystemProcedure {
 
                 // update the global catalog if we get there first
                 @SuppressWarnings("deprecation")
-                Pair<CatalogContext, CatalogSpecificPlanner> p =
+                CatalogContext catalogContext =
                 VoltDB.instance().catalogUpdate(
                         commands,
                         catalogStuff.catalogBytes,
@@ -388,7 +387,7 @@ public class UpdateCore extends VoltSystemProcedure {
                 // update the local catalog.  Safe to do this thanks to the check to get into here.
                 long uniqueId = m_runner.getUniqueId();
                 long spHandle = m_runner.getTxnState().getNotice().getSpHandle();
-                context.updateCatalog(commands, p.getFirst(), p.getSecond(),
+                context.updateCatalog(commands, catalogContext,
                         requiresSnapshotIsolation, uniqueId, spHandle,
                         requireCatalogDiffCmdsApplyToEE, requiresNewExportGeneration);
 
